@@ -1,6 +1,6 @@
 # Todo App with AI Calendar Integration
 
-A modern todo application built with FastAPI backend and Next.js frontend, featuring intelligent scheduling powered by AI and Google Calendar integration.
+A simple todo application built with Cursor using FastAPI backend and Next.js frontend, featuring intelligent scheduling powered by AI and Google Calendar integration.
 
 ## ✨ Features
 
