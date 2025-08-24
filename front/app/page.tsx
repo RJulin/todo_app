@@ -7,7 +7,7 @@ import TodoList from '../components/TodoList'
 import DatePicker from '../components/DatePicker'
 import ThemeToggle from '../components/ThemeToggle'
 import Toast from '../components/Toast'
-import { getTodos, createTodo, updateTodo, deleteTodo, getCalendarStatus, authenticateCalendar, scheduleTodoInCalendar } from '../lib/api'
+import { getTodos, createTodo, updateTodo, deleteTodo, getCalendarStatus, authenticateCalendar, scheduleTodoInCalendar } from '../libraries/api'
 
 interface ToastMessage {
   message: string;
