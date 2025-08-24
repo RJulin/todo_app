@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #171717;
+  --background: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground: #ededed;
+    --background: #171717;
+  }
+}
+
+/* Allow manual override via class-based dark mode */
+.dark :root {
+  --foreground: #ededed;
+  --background: #171717;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+} 

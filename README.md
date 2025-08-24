@@ -1,64 +1,148 @@
-# Next.js + FastAPI Template
+# Todo App with AI Calendar Integration
 
-A minimal template project with Next.js frontend and Python FastAPI backend.
+A modern todo application built with FastAPI backend and Next.js frontend, featuring intelligent scheduling powered by AI and Google Calendar integration.
 
-## Project Structure
+## ✨ Features
 
+- 📝 **Smart Todo Management**: Create, edit, and organize todos by date
+- 🤖 **AI-Powered Scheduling**: OpenAI analyzes your todos and suggests optimal calendar placement
+- 📅 **Google Calendar Integration**: Seamlessly add todos to your Gmail calendar
+- 🎯 **Smart Time Slots**: AI finds the best available time based on task type and your schedule
+- 🌙 **Dark Mode**: Beautiful dark/light theme toggle
+- 📱 **Responsive Design**: Works perfectly on desktop and mobile
+- 🚀 **Real-time Updates**: Instant feedback and smooth interactions
+- 🛡️ **Fallback Scheduling**: Intelligent scheduling even when AI is unavailable
+
+## 🏗️ Architecture
+
+- **Backend**: FastAPI with SQLAlchemy ORM
+- **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
+- **Database**: SQLite (easily upgradable to PostgreSQL/MySQL)
+- **AI**: OpenAI GPT-3.5-turbo for intelligent scheduling
+- **Calendar**: Google Calendar API integration with OAuth 2.0
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- Node.js 18+
+- OpenAI API key (optional - fallback scheduling works without it)
+- Google Cloud Project with Calendar API enabled
+
+### 1. Clone and Setup
+```bash
+git clone <your-repo>
+cd todo_app
 ```
-├── frontend/          # Next.js application
-├── backend/           # FastAPI application
-└── README.md          # This file
+
+### 2. Backend Setup
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Copy and configure environment
+cp env.example .env
+# Add your OPENAI_API_KEY to .env (optional but recommended)
+
+# Download Google credentials.json and place in backend directory
+# See backend/README.md for detailed Google Calendar setup
+
+# Start backend
+uvicorn main:app --reload
 ```
 
-## Quick Start
+### 3. Frontend Setup
+```bash
+cd front
+npm install
+npm run dev
+```
 
-### Backend (FastAPI)
+### 4. Open Your Browser
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-1. Navigate to backend directory:
-   ```bash
-   cd backend
-   ```
+## 🔧 Google Calendar Setup
 
-2. Create virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+1. **Create Google Cloud Project** and enable Calendar API
+2. **Generate OAuth 2.0 credentials** and download `credentials.json`
+3. **Place credentials.json** in the backend directory
+4. **Click "Connect Calendar"** in the app to authenticate
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+See [backend/README.md](backend/README.md) for detailed setup instructions.
 
-4. Run the server:
-   ```bash
-   uvicorn main:app --reload --port 8000
-   ```
+## 🎯 How It Works
 
-API will be available at `http://localhost:8000`
+1. **Create a Todo**: Add tasks with title and description
+2. **AI Analysis**: OpenAI analyzes the task content and context (if available)
+3. **Smart Scheduling**: AI or fallback logic finds the best available time slot
+4. **Calendar Integration**: Todo automatically appears in your Google Calendar
+5. **Smart Reminders**: Get notified 15 minutes before each scheduled task
 
-### Frontend (Next.js)
+## 🧠 AI vs Fallback Scheduling
 
-1. Navigate to frontend directory:
-   ```bash
-   cd frontend
-   ```
+- **AI Scheduling**: Uses OpenAI to analyze task content and suggest optimal timing
+- **Fallback Scheduling**: Intelligent heuristics when AI is unavailable:
+  - Work tasks prefer morning slots (9 AM - 12 PM)
+  - Personal tasks prefer afternoon slots (12 PM - 6 PM)
+  - Duration estimation based on task keywords
+  - No external API dependencies
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 📚 API Endpoints
 
-3. Run development server:
-   ```bash
-   npm run dev
-   ```
+### Todo Management
+- `GET /api/` - Get todos for a specific date
+- `POST /api/` - Create a new todo
+- `PUT /api/{id}` - Update a todo
+- `DELETE /api/{id}` - Delete a todo
 
-Frontend will be available at `http://localhost:3000`
+### Calendar Integration
+- `GET /api/calendar/status` - Check calendar authentication status
+- `POST /api/calendar/auth` - Authenticate with Google Calendar
+- `GET /api/calendar/free-slots` - Get available time slots for a date
+- `POST /api/calendar/schedule-todo/{id}` - Schedule todo in Google Calendar
 
-## Features
+## 🛡️ Security Features
 
-- **Backend**: FastAPI with basic health check endpoint
-- **Frontend**: Next.js with simple landing page
-- **CORS**: Configured for local development
-- **Hot Reload**: Both frontend and backend support hot reloading 
+- Rate limiting to prevent abuse
+- Input validation and sanitization
+- Secure OAuth 2.0 authentication
+- Environment variable configuration
+- CORS protection for frontend integration
+
+## 🔍 Troubleshooting
+
+### Common Issues
+- **403 Access Denied**: Add your email as a test user in Google OAuth consent screen
+- **Calendar Connection Fails**: Ensure `credentials.json` is in the backend directory
+- **AI Scheduling Errors**: Check OpenAI API key or use fallback scheduling
+- **Module Not Found**: Install dependencies with `pip install -r requirements.txt`
+
+### Fallback Mode
+The app works even without OpenAI API:
+- Intelligent keyword-based scheduling
+- Time-of-day preferences for different task types
+- Duration estimation based on task content
+- No external API dependencies
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+- Check the [backend/README.md](backend/README.md) for detailed setup
+- Review API documentation at `/docs` when backend is running
+- Open an issue for bugs or feature requests
+- The app includes comprehensive error handling and fallback modes 
