@@ -80,7 +80,6 @@ See [backend/README.md](backend/README.md) for detailed setup instructions.
 2. **AI Analysis**: OpenAI analyzes the task content and context (if available)
 3. **Smart Scheduling**: AI or fallback logic finds the best available time slot
 4. **Calendar Integration**: Todo automatically appears in your Google Calendar
-5. **Smart Reminders**: Get notified 15 minutes before each scheduled task
 
 ## 🧠 AI vs Fallback Scheduling
 
