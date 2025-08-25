@@ -143,13 +143,13 @@ class GoogleCalendarService:
         """Find free time slots in the calendar for a specific date"""
         events = self.get_calendar_events(target_date)
         
-        # Define business hours (9 AM to 6 PM)
-        business_start = datetime.combine(target_date, datetime.min.time().replace(hour=9))
-        business_end = datetime.combine(target_date, datetime.min.time().replace(hour=18))
+        # Define full day range (12 AM to 11:59 PM)
+        day_start = datetime.combine(target_date, datetime.min.time().replace(hour=0, minute=0))
+        day_end = datetime.combine(target_date, datetime.min.time().replace(hour=23, minute=59))
         
         # Convert to minutes since midnight for easier calculations
-        business_start_minutes = business_start.hour * 60 + business_start.minute
-        business_end_minutes = business_end.hour * 60 + business_end.minute
+        day_start_minutes = day_start.hour * 60 + day_start.minute  # 0 minutes
+        day_end_minutes = day_end.hour * 60 + day_end.minute  # 1439 minutes (23*60 + 59)
         
         # Create busy time ranges
         busy_ranges = []
@@ -158,17 +158,23 @@ class GoogleCalendarService:
                 start_dt = datetime.fromisoformat(event['start'].replace('Z', '+00:00'))
                 end_dt = datetime.fromisoformat(event['end'].replace('Z', '+00:00'))
                 
-                start_minutes = start_dt.hour * 60 + start_dt.minute
-                end_minutes = end_dt.hour * 60 + end_dt.minute
-                
-                busy_ranges.append((start_minutes, end_minutes))
+                # Only consider events on the target date
+                if start_dt.date() == target_date:
+                    start_minutes = start_dt.hour * 60 + start_dt.minute
+                    end_minutes = end_dt.hour * 60 + end_dt.minute
+                    
+                    # Ensure we don't go beyond day boundaries
+                    start_minutes = max(0, start_minutes)
+                    end_minutes = min(1439, end_minutes)
+                    
+                    busy_ranges.append((start_minutes, end_minutes))
         
         # Sort busy ranges
         busy_ranges.sort()
         
         # Find free slots
         free_slots = []
-        current_time = business_start_minutes
+        current_time = day_start_minutes
         
         for start, end in busy_ranges:
             if current_time < start:
@@ -184,15 +190,15 @@ class GoogleCalendarService:
             current_time = max(current_time, end)
         
         # Check if there's time after the last event
-        if current_time < business_end_minutes:
-            slot_duration = business_end_minutes - current_time
+        if current_time < day_end_minutes:
+            slot_duration = day_end_minutes - current_time
             if slot_duration >= min_duration:
                 free_slots.append({
                     'start_minutes': current_time,
-                    'end_minutes': business_end_minutes,
+                    'end_minutes': day_end_minutes,
                     'duration_minutes': slot_duration,
                     'start_time': self._minutes_to_time(current_time),
-                    'end_time': self._minutes_to_time(business_end_minutes)
+                    'end_time': self._minutes_to_time(day_end_minutes)
                 })
         
         return free_slots

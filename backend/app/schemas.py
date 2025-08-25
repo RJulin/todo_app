@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime, date
 from typing import Optional
 
@@ -22,6 +22,4 @@ class Todo(TodoBase):
     calendar_event_id: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True 
+    model_config = ConfigDict(from_attributes=True) 
