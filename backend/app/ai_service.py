@@ -19,7 +19,7 @@ class AIService:
 
     def schedule_todo(self, todo_title: str, todo_description: str, target_date: date, 
                      free_slots: List[Dict]) -> Optional[Dict]:
-        """Use AI to determine the best time slot for a todo"""
+        """Use AI to determine the best time slot and specific time for a todo"""
         if not free_slots:
             return None
         # If no OpenAI client, use fallback
@@ -40,7 +40,7 @@ class AIService:
             
             # Create prompt for AI scheduling
             prompt = f"""
-            You will schedule todo items to users calendar. Please analyze the available time slots and suggest the best one.
+            You will schedule todo items to users calendar. Please analyze the available time slots and suggest the best one WITH a specific start time within that slot.
             
             Todo: {todo_title}
             Description: {todo_description or 'No description'}
@@ -53,23 +53,26 @@ class AIService:
             Consider:
             1. The nature of the todo (work, personal, urgent, etc.)
             2. Time of day preferences:
-               - MORNING (early slots): Work tasks, important meetings, high-energy activities
-               - AFTERNOON (middle slots): Routine tasks, personal errands, moderate energy
-               - EVENING (late slots): Relaxing tasks, bedtime activities, low energy
-            3. Choose the slot and specific time in that slot that matches the activity's natural timing
+               - MORNING (06:00-12:00): Work tasks, important meetings, high-energy activities
+               - AFTERNOON (12:00-18:00): Routine tasks, personal errands, moderate energy
+               - EVENING (18:00-22:00): Relaxing tasks, bedtime activities, low energy
+               - NIGHT (22:00-06:00): Sleep-related, quiet activities
+            3. Choose the slot AND specific time in that slot that matches the activity's natural timing
             4. Duration needed (estimate based on title/description)
             5. Energy levels at different times
             6. Only select from the available future time slots
             
             Examples:
-            - "Take sleeping pills before bed" → MUST choose time in evening 18:00-22:00)
-            - "Morning workout" → MUST choose time inmorning 06:00-12:00)
-            - "Afternoon meeting" → MUST choose time in afternoon 12:00-18:00)
+            - "Take sleeping pills before bed" → Choose available evening slot (18:00-22:00) and suggest 21:00
+            - "Morning workout" → Choose available morning slot (06:00-12:00) and suggest 07:00
+            - "Afternoon meeting" → Choose available afternoon slot (12:00-18:00) and suggest 14:00
+            - "Evening relaxation" → Choose available evening slot (18:00-22:00) and suggest 19:00
 
             Return only a JSON response with:
             {{
                 "selected_slot_index": <index of best slot from the valid_slots list>,
-                "reasoning": "<brief explanation>",
+                "suggested_start_time": "<HH:MM format - specific time within the slot>",
+                "reasoning": "<brief explanation of why this time is best>",
                 "estimated_duration": <minutes needed>
             }}
             """
@@ -94,17 +97,29 @@ class AIService:
                 try:
                     result = json.loads(json_str)
                     slot_index = result.get('selected_slot_index', 0)
+                    suggested_time = result.get('suggested_start_time', '')
                     
                     print(f"DEBUG: AI selected slot_index: {slot_index}")
+                    print(f"DEBUG: AI suggested time: {suggested_time}")
                     print(f"DEBUG: valid_slots length: {len(valid_slots)}")
                     print(f"DEBUG: valid_slots content: {valid_slots}")
                     
                     if 0 <= slot_index < len(valid_slots):
                         # Get the slot from valid_slots, not free_slots
                         selected_slot = valid_slots[slot_index][1].copy()  # valid_slots contains (index, slot) tuples
+                        
+                        # Validate and use the suggested time if it's within the slot
+                        if suggested_time and self._is_time_in_slot(suggested_time, selected_slot):
+                            # Convert suggested time to minutes for better precision
+                            suggested_minutes = self._time_to_minutes(suggested_time)
+                            selected_slot['start_minutes'] = suggested_minutes
+                            selected_slot['start_time'] = suggested_time
+                            print(f"AI Successfully Selected: Slot {slot_index} at {suggested_time} (within slot {selected_slot['start_time']}-{selected_slot['end_time']})")
+                        else:
+                            print(f"AI suggested time {suggested_time} not valid for slot, using slot start time")
+
                         selected_slot['ai_reasoning'] = result.get('reasoning', 'AI selected this time')
                         selected_slot['estimated_duration'] = result.get('estimated_duration', 30)
-                        print(f"AI Successfully Selected: Slot {slot_index} at {selected_slot['start_time']}")
                         return selected_slot
                     else:
                         print(f"DEBUG: Slot index {slot_index} is out of range for valid_slots (0-{len(valid_slots)-1})")
@@ -142,12 +157,14 @@ class AIService:
         # Simple heuristic: prefer morning slots for work tasks, afternoon for personal
         work_keywords = ['work', 'meeting', 'call', 'project', 'report', 'email', 'client', 'business']
         personal_keywords = ['grocery', 'shopping', 'exercise', 'gym', 'personal', 'family', 'home']
+        evening_keywords = ['sleep', 'bed', 'relax', 'dinner', 'evening', 'night', 'rest']
         
         text_to_analyze = f"{todo_title} {todo_description or ''}".lower()
         
-        # Determine if it's work or personal
+        # Determine if it's work, personal, or evening
         is_work = any(keyword in text_to_analyze for keyword in work_keywords)
         is_personal = any(keyword in text_to_analyze for keyword in personal_keywords)
+        is_evening = any(keyword in text_to_analyze for keyword in evening_keywords)
         
         # Estimate duration based on content
         estimated_duration = 30  # Default
@@ -158,20 +175,40 @@ class AIService:
         elif any(word in text_to_analyze for word in ['exercise', 'gym', 'workout']):
             estimated_duration = 60
         
-        # Select best slot based on type
+        # Select best slot based on type and suggest specific time
         selected_slot = valid_slots[0].copy()  # Default to first valid slot
+        suggested_time = selected_slot['start_time']  # Default to slot start time
         
         if is_work and len(valid_slots) > 1:
             # Prefer morning slots for work (first few slots)
             selected_slot = valid_slots[0].copy()
+            # Suggest early morning time (e.g., 9:00 AM)
+            suggested_time = "08:00"
         elif is_personal and len(valid_slots) > 1:
             # Prefer afternoon slots for personal (later slots)
             selected_slot = valid_slots[-1].copy()
+            # Suggest afternoon time (e.g., 2:00 PM)
+            suggested_time = "14:00"
+        elif is_evening:
+            # For evening tasks, find the latest available slot
+            evening_slots = [slot for slot in valid_slots if self._time_to_minutes(slot['start_time']) >= 18 * 60]  # 6 PM or later
+            if evening_slots:
+                selected_slot = evening_slots[-1].copy()
+                # Suggest evening time (e.g., 8:00 PM)
+                suggested_time = "20:00"
         
-        selected_slot['ai_reasoning'] = f"Fallback scheduling: {'Work' if is_work else 'Personal'} task scheduled at {selected_slot['start_time']}"
+        # Validate and use the suggested time if it's within the slot
+        if self._is_time_in_slot(suggested_time, selected_slot):
+            suggested_minutes = self._time_to_minutes(suggested_time)
+            selected_slot['start_minutes'] = suggested_minutes
+            selected_slot['start_time'] = suggested_time
+            print(f"Fallback Selected: {'Work' if is_work else 'Personal' if is_personal else 'Evening'} task at {suggested_time} (within slot {selected_slot['start_time']}-{selected_slot['end_time']})")
+        else:
+            print(f"Fallback: Suggested time {suggested_time} not valid for slot, using slot start time {selected_slot['start_time']}")
+        
+        selected_slot['ai_reasoning'] = f"Fallback scheduling: {'Work' if is_work else 'Personal' if is_personal else 'Evening'} task scheduled at {selected_slot['start_time']}"
         selected_slot['estimated_duration'] = estimated_duration
         
-        print(f"Fallback Selected: {'Work' if is_work else 'Personal'} task at {selected_slot['start_time']}")
         print(f"Fallback Reasoning: {selected_slot['ai_reasoning']}")
         
         return selected_slot
@@ -181,4 +218,23 @@ class AIService:
         formatted = []
         for i, slot in enumerate(free_slots):
             formatted.append(f"Slot {i}: {slot['start_time']} - {slot['end_time']} ({slot['duration_minutes']} min)")
-        return "\n".join(formatted) 
+        return "\n".join(formatted)
+    
+    def _is_time_in_slot(self, suggested_time: str, slot: Dict) -> bool:
+        """Check if a suggested time is within a slot's time range"""
+        try:
+            suggested_minutes = self._time_to_minutes(suggested_time)
+            slot_start = slot['start_minutes']
+            slot_end = slot['end_minutes']
+            
+            return slot_start <= suggested_minutes <= slot_end
+        except:
+            return False
+    
+    def _time_to_minutes(self, time_str: str) -> int:
+        """Convert time string (HH:MM) to minutes since midnight"""
+        try:
+            hours, minutes = map(int, time_str.split(':'))
+            return hours * 60 + minutes
+        except:
+            return 0 
