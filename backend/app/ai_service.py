@@ -182,20 +182,33 @@ class AIService:
         if is_work and len(valid_slots) > 1:
             # Prefer morning slots for work (first few slots)
             selected_slot = valid_slots[0].copy()
-            # Suggest early morning time (e.g., 9:00 AM)
-            suggested_time = "08:00"
+            # Suggest a time within the actual slot, not a fixed time
+            slot_start_minutes = self._time_to_minutes(selected_slot['start_time'])
+            slot_end_minutes = self._time_to_minutes(selected_slot['end_time'])
+            # Suggest early in the slot, but not before it starts
+            suggested_minutes = max(slot_start_minutes, 8 * 60)  # 8 AM or slot start, whichever is later
+            suggested_time = self._minutes_to_time(suggested_minutes)
         elif is_personal and len(valid_slots) > 1:
             # Prefer afternoon slots for personal (later slots)
             selected_slot = valid_slots[-1].copy()
-            # Suggest afternoon time (e.g., 2:00 PM)
-            suggested_time = "14:00"
+            # Suggest a time within the actual slot
+            slot_start_minutes = self._time_to_minutes(selected_slot['start_time'])
+            slot_end_minutes = self._time_to_minutes(selected_slot['end_time'])
+            # Suggest middle of the slot
+            suggested_minutes = slot_start_minutes + (slot_end_minutes - slot_start_minutes) // 2
+            suggested_time = self._minutes_to_time(suggested_minutes)
         elif is_evening:
             # For evening tasks, find the latest available slot
             evening_slots = [slot for slot in valid_slots if self._time_to_minutes(slot['start_time']) >= 18 * 60]  # 6 PM or later
             if evening_slots:
                 selected_slot = evening_slots[-1].copy()
-                # Suggest evening time (e.g., 8:00 PM)
-                suggested_time = "20:00"
+                # Suggest a time within the actual slot
+                slot_start_minutes = self._time_to_minutes(selected_slot['start_time'])
+                slot_end_minutes = self._time_to_minutes(selected_slot['end_time'])
+                # Suggest evening time, but not after slot ends
+                suggested_minutes = min(slot_end_minutes - 60, 20 * 60)  # 8 PM or 1 hour before slot ends
+                suggested_minutes = max(suggested_minutes, slot_start_minutes)  # But not before slot starts
+                suggested_time = self._minutes_to_time(suggested_minutes)
         
         # Validate and use the suggested time if it's within the slot
         if self._is_time_in_slot(suggested_time, selected_slot):
@@ -224,11 +237,20 @@ class AIService:
         """Check if a suggested time is within a slot's time range"""
         try:
             suggested_minutes = self._time_to_minutes(suggested_time)
-            slot_start = slot['start_minutes']
-            slot_end = slot['end_minutes']
+            
+            # Handle both start_minutes/end_minutes and start_time/end_time formats
+            if 'start_minutes' in slot and 'end_minutes' in slot:
+                slot_start = slot['start_minutes']
+                slot_end = slot['end_minutes']
+            elif 'start_time' in slot and 'end_time' in slot:
+                slot_start = self._time_to_minutes(slot['start_time'])
+                slot_end = self._time_to_minutes(slot['end_time'])
+            else:
+                return False
             
             return slot_start <= suggested_minutes <= slot_end
-        except:
+        except Exception as e:
+            print(f"Error validating time in slot: {e}")
             return False
     
     def _time_to_minutes(self, time_str: str) -> int:
@@ -237,4 +259,13 @@ class AIService:
             hours, minutes = map(int, time_str.split(':'))
             return hours * 60 + minutes
         except:
-            return 0 
+            return 0
+    
+    def _minutes_to_time(self, minutes: int) -> str:
+        """Convert minutes since midnight to time string (HH:MM)"""
+        try:
+            hours = minutes // 60
+            mins = minutes % 60
+            return f"{hours:02d}:{mins:02d}"
+        except:
+            return "00:00" 
