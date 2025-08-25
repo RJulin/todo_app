@@ -243,10 +243,7 @@ class GoogleCalendarService:
                     'timeZone': self.timezone,
                 },
                 'reminders': {
-                    'useDefault': False,
-                    'overrides': [
-                        {'method': 'popup', 'minutes': 15},
-                    ],
+                    'useDefault': True,
                 },
             }
             
