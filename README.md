@@ -93,10 +93,10 @@ See [backend/README.md](backend/README.md) for detailed setup instructions.
 ## 📚 API Endpoints
 
 ### Todo Management
-- `GET /api/` - Get todos for a specific date
-- `POST /api/` - Create a new todo
-- `PUT /api/{id}` - Update a todo
-- `DELETE /api/{id}` - Delete a todo
+- `GET /api/todoapp` - Get todos for a specific date
+- `POST /api/todoapp` - Create a new todo
+- `PUT /api/todoapp/{id}` - Update a todo
+- `DELETE /api/todoapp/{id}` - Delete a todo
 
 ### Calendar Integration
 - `GET /api/calendar/status` - Check calendar authentication status
