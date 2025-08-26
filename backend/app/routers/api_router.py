@@ -249,6 +249,18 @@ def authenticate_calendar():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")
 
+@router.post("/api/calendar/logout")
+def logout_calendar():
+    """Logout from Google Calendar by clearing tokens"""
+    try:
+        success = calendar_integration.logout_google()
+        if success:
+            return {"message": "Successfully logged out from Google Calendar"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to logout from Google Calendar")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Logout error: {str(e)}")
+
 @router.get("/api/calendar/free-slots")
 def get_free_slots(
     target_date: date = Query(..., description="Date to check for free slots (YYYY-MM-DD)"),

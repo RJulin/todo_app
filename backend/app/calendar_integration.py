@@ -22,6 +22,10 @@ class CalendarIntegration:
         """Authenticate with Google Calendar"""
         return self.google_calendar_service.authenticate_google()
 
+    def logout_google(self) -> bool:
+        """Logout from Google Calendar by clearing tokens"""
+        return self.google_calendar_service.logout_google()
+
     def get_calendar_events(self, target_date: date) -> List[Dict]:
         """Get calendar events for a specific date"""
         return self.google_calendar_service.get_calendar_events(target_date)

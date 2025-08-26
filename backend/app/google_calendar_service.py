@@ -82,6 +82,25 @@ class GoogleCalendarService:
             print(f"Authentication failed: {e}")
             return False
 
+    def logout_google(self) -> bool:
+        """Logout from Google by clearing tokens and credentials"""
+        try:
+            # Clear existing tokens
+            if os.path.exists('token.json'):
+                os.remove('token.json')
+            
+            # Clear credentials and services
+            self.creds = None
+            self.calendar_service = None
+            self.gmail_service = None
+            
+            print("Successfully logged out from Google")
+            return True
+            
+        except Exception as e:
+            print(f"Logout failed: {e}")
+            return False
+
     def get_calendar_events(self, target_date: date) -> List[Dict]:
         """Get calendar events for a specific date"""
         if not self.calendar_service:
