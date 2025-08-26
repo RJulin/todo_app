@@ -49,6 +49,11 @@ export async function authenticateCalendar(): Promise<{ message: string }> {
   return handleResponse(response)
 }
 
+export async function logoutCalendar(): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE}/api/calendar/logout`, { method: 'POST' })
+  return handleResponse(response)
+}
+
 export async function scheduleTodoInCalendar(todoId: number, targetDate: string): Promise<{
   message: string;
   scheduled_time: string;

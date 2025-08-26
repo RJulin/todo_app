@@ -7,7 +7,7 @@ import TodoList from '../components/TodoList'
 import DatePicker from '../components/DatePicker'
 import ThemeToggle from '../components/ThemeToggle'
 import Toast from '../components/Toast'
-import { getTodos, createTodo, updateTodo, deleteTodo, getCalendarStatus, authenticateCalendar, scheduleTodoInCalendar } from '../libraries/api'
+import { getTodos, createTodo, updateTodo, deleteTodo, getCalendarStatus, authenticateCalendar, logoutCalendar, scheduleTodoInCalendar } from '../libraries/api'
 
 interface ToastMessage {
   message: string;
@@ -108,6 +108,16 @@ export default function Home() {
     }
   };
 
+  const handleCalendarLogout = async () => {
+    try {
+      await logoutCalendar();
+      setCalendarAuthenticated(false);
+      setToast({ message: 'Calendar disconnected successfully!', type: 'success' });
+    } catch (error) {
+      setToast({ message: 'Failed to disconnect calendar', type: 'error' });
+    }
+  };
+
   const handleScheduleInCalendar = async (todoId: number) => {
     try {
       const result = await scheduleTodoInCalendar(todoId, selectedDate.toISOString().split('T')[0]);
@@ -139,14 +149,22 @@ export default function Home() {
             {!calendarAuthenticated ? (
               <button
                 onClick={handleCalendarAuth}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Connect Calendar
               </button>
             ) : (
-              <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full dark:bg-green-900/20 dark:text-green-300">
-                📅 Calendar Connected
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full dark:bg-green-900/20 dark:text-green-300">
+                  📅 Calendar Connected
+                </span>
+                <button
+                  onClick={handleCalendarLogout}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Disconnect
+                </button>
+              </div>
             )}
           </div>
         </div>
