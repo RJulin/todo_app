@@ -71,6 +71,20 @@ npm run dev
 
 ## 🔧 Google Calendar Setup
 
+### Required Google Cloud Services
+1. **Google Calendar API** - Core calendar functionality
+2. **Google+ API** - User authentication (if not using basic OAuth)
+
+### OAuth 2.0 Scopes
+Your app requires this minimal scope for calendar access:
+```
+https://www.googleapis.com/auth/calendar.events
+```
+- **What it does**: Read and write calendar events only
+- **User sees**: "See and manage events on your Google Calendar"
+- **Perfect for**: Adding, editing, and deleting todo events
+
+### Setup Steps
 1. **Create Google Cloud Project** and enable Calendar API
 2. **Generate OAuth 2.0 credentials** and download `credentials.json`
 3. **Place credentials.json** in the backend directory

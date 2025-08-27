@@ -53,32 +53,42 @@ cp env.example .env
 
 ### 3. Google Calendar Setup
 
-#### Step 1: Create Google Cloud Project
+#### Step 1: Enable Required Google Cloud Services
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing one
-3. Enable Google Calendar API and Gmail API
+3. **Enable these APIs:**
+   - **Google Calendar API** - Core calendar functionality
+   - **Google+ API** - User authentication (if not using basic OAuth)
 
-#### Step 2: Create OAuth 2.0 Credentials
+#### Step 2: Configure OAuth 2.0 Scopes
+Your app requires this minimal scope for calendar access:
+```
+https://www.googleapis.com/auth/calendar.events
+```
+- **What it does**: Read and write calendar events only
+- **User sees**: "See and manage events on your Google Calendar"
+- **Perfect for**: Adding, editing, and deleting todo events
+
+#### Step 3: Create OAuth 2.0 Credentials
 1. Go to "APIs & Services" > "Credentials"
 2. Click "Create Credentials" > "OAuth 2.0 Client IDs"
 3. Choose "Desktop application"
 4. Download the `credentials.json` file
 5. Place `credentials.json` in the backend directory
 
-#### Step 3: Configure OAuth Consent Screen
+#### Step 4: Configure OAuth Consent Screen
 1. Go to "APIs & Services" > "OAuth consent screen"
 2. Set app name and user support email
-3. Add scopes:
-   - `https://www.googleapis.com/auth/calendar`
-   - `https://www.googleapis.com/auth/gmail.send`
+3. **Add the required scope:**
+   - `https://www.googleapis.com/auth/calendar.events`
 4. **Add test users** (including your own email)
 5. Save and continue
 
-#### Step 4: First Authentication
+#### Step 5: First Authentication
 1. Start the backend server
 2. Click "Connect Calendar" in the frontend
 3. Complete OAuth flow in your browser
-4. Grant calendar and Gmail permissions
+4. Grant calendar events permissions
 
 ### 4. Run the Application
 
@@ -125,7 +135,6 @@ The backend will be available at `http://localhost:8000`
 - Automatically adds todos to your Google Calendar
 - Sets appropriate duration and reminders
 - Includes task description and context
-- Handles timezone conversions properly
 
 ## Security Features
 
@@ -153,7 +162,11 @@ The backend will be available at `http://localhost:8000`
 
 #### API Not Enabled
 - **Error**: "API not enabled"
-- **Solution**: Enable Google Calendar API and Gmail API in Google Cloud Console
+- **Solution**: Enable Google Calendar API and Google+ API in Google Cloud Console
+
+#### OAuth Scope Issues
+- **Error**: "Insufficient permissions"
+- **Solution**: Ensure `https://www.googleapis.com/auth/calendar.events` scope is added to OAuth consent screen
 
 ### OpenAI API Issues
 
@@ -227,7 +240,6 @@ DATABASE_URL=sqlite:///./todo_app.db
 
 # Optional but recommended
 OPENAI_API_KEY=your-openai-api-key-here
-
 
 ## Production Considerations
 
