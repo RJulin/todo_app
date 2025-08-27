@@ -5,7 +5,7 @@ A simple todo application built with Cursor using FastAPI backend and Next.js fr
 ## ✨ Features
 
 - 📝 **Smart Todo Management**: Create, edit, and organize todos by date
-- 🤖 **AI-Powered Scheduling**: OpenAI analyzes your todos and suggests optimal calendar placement
+- 🤖 **AI-Powered Scheduling**: OpenAI GPT-4o Mini analyzes your todos and suggests optimal calendar placement
 - 📅 **Google Calendar Integration**: Seamlessly add todos to your Gmail calendar
 - 🎯 **Smart Time Slots**: AI finds the best available time based on task type and your schedule
 - 🌙 **Dark Mode**: Beautiful dark/light theme toggle
@@ -15,16 +15,16 @@ A simple todo application built with Cursor using FastAPI backend and Next.js fr
 
 ## 🏗️ Architecture
 
-- **Backend**: FastAPI with SQLAlchemy ORM
+- **Backend**: FastAPI with SQLAlchemy ORM (Python 3.13+)
 - **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
 - **Database**: SQLite (easily upgradable to PostgreSQL/MySQL)
-- **AI**: OpenAI GPT-3.5-turbo for intelligent scheduling
+- **AI**: OpenAI GPT-4o Mini for intelligent scheduling
 - **Calendar**: Google Calendar API integration with OAuth 2.0
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.13+**
 - Node.js 18+
 - OpenAI API key (optional - fallback scheduling works without it)
 - Google Cloud Project with Calendar API enabled
@@ -38,8 +38,12 @@ cd todo_app
 ### 2. Backend Setup
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Create Python 3.13 virtual environment
+python3.13 -m venv .venv_py313
+source .venv_py313/bin/activate  # On Windows: .venv_py313\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 
 # Copy and configure environment
@@ -77,7 +81,7 @@ See [backend/README.md](backend/README.md) for detailed setup instructions.
 ## 🎯 How It Works
 
 1. **Create a Todo**: Add tasks with title and description
-2. **AI Analysis**: OpenAI analyzes the task content and context (if available)
+2. **AI Analysis**: OpenAI GPT-4o Mini analyzes the task content and context (if available)
 3. **Smart Scheduling**: AI or fallback logic finds the best available time slot
 4. **Calendar Integration**: Todo automatically appears in your Google Calendar
 
@@ -119,6 +123,7 @@ See [backend/README.md](backend/README.md) for detailed setup instructions.
 - **Calendar Connection Fails**: Ensure `credentials.json` is in the backend directory
 - **AI Scheduling Errors**: Check OpenAI API key or use fallback scheduling
 - **Module Not Found**: Install dependencies with `pip install -r requirements.txt`
+- **Python Version Issues**: Ensure you're using Python 3.13+ for best compatibility
 
 ### Fallback Mode
 The app works even without OpenAI API:

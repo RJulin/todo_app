@@ -6,7 +6,7 @@ A FastAPI backend for a todo application with Google Calendar integration and AI
 
 - ✅ **CRUD Operations**: Create, read, update, and delete todos
 - 📅 **Date-based Todos**: Organize todos by specific dates
-- 🤖 **AI Scheduling**: Use OpenAI to intelligently schedule todos in Google Calendar
+- 🤖 **AI Scheduling**: Use OpenAI GPT-4o Mini to intelligently schedule todos in Google Calendar
 - 🛡️ **Fallback Scheduling**: Intelligent scheduling even when AI is unavailable
 - 🔐 **Google Calendar Integration**: Seamlessly add todos to your Gmail calendar
 - 🚀 **Smart Time Slots**: AI or fallback logic finds the best time for each todo
@@ -16,18 +16,28 @@ A FastAPI backend for a todo application with Google Calendar integration and AI
 
 ### 1. Install Dependencies
 
+**Prerequisites:**
+- **Python 3.13+** (required for best compatibility and performance)
+
 ```bash
+# Create Python 3.13 virtual environment
+python3.13 -m venv .venv_py313
+source .venv_py313/bin/activate  # On Windows: .venv_py313\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 **Required packages:**
 - `fastapi` - Web framework
 - `uvicorn` - ASGI server
-- `sqlalchemy` - Database ORM
+- `sqlalchemy>=2.0.43` - Database ORM (Python 3.13 compatible)
+- `alembic` - Database migrations
 - `google-auth` - Google authentication
 - `google-auth-oauthlib` - OAuth 2.0 flow
 - `google-api-python-client` - Google Calendar API
-- `openai` - AI scheduling (optional)
+- `openai` - AI scheduling with GPT-4o Mini (optional)
+- `pytz` & `tzlocal` - Timezone handling
 
 ### 2. Environment Variables
 
@@ -81,11 +91,11 @@ The backend will be available at `http://localhost:8000`
 ## API Endpoints
 
 ### Todo Management
-- `GET /api/` - Get todos for a specific date
-- `POST /api/` - Create a new todo
-- `GET /api/{id}` - Get a specific todo
-- `PUT /api/{id}` - Update a todo
-- `DELETE /api/{id}` - Delete a todo
+- `GET /api/todoapp` - Get todos for a specific date
+- `POST /api/todoapp` - Create a new todo
+- `GET /api/todoapp/{id}` - Get a specific todo
+- `PUT /api/todoapp/{id}` - Update a todo
+- `DELETE /api/todoapp/{id}` - Delete a todo
 
 ### Calendar Integration
 - `GET /api/calendar/status` - Check calendar authentication status
@@ -115,6 +125,7 @@ The backend will be available at `http://localhost:8000`
 - Automatically adds todos to your Google Calendar
 - Sets appropriate duration and reminders
 - Includes task description and context
+- Handles timezone conversions properly
 
 ## Security Features
 
